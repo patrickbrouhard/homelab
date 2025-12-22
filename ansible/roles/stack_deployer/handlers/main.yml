@@ -1,0 +1,7 @@
+# Ne sert pas pour l'instant
+- name: Restart docker
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+  when: false

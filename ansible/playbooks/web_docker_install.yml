@@ -1,0 +1,35 @@
+---
+# Playbook dédié à l'installation initiale de Docker.
+- name: Docker - installation initiale (import_role tasks_from)
+  hosts: web
+  become: true
+  gather_facts: true
+
+  vars:
+    docker_users:
+      - "{{ ansible_user }}"
+
+  tasks:
+    - name: Précondition - apt update/upgrade
+      import_role:
+        name: common
+        tasks_from: apt-update-upgrade.yml
+
+    - name: Installer Docker (APT, dépôt, clé)
+      import_role:
+        name: docker
+        tasks_from: install.yml
+
+    - name: Configurer le daemon Docker (daemon.json, sysctl)
+      import_role:
+        name: docker
+        tasks_from: daemon.yml
+      vars:
+        docker_restart_on_config_change: true
+
+    - name: Post-install (groupes, users, tests)
+      import_role:
+        name: docker
+        tasks_from: post_install.yml
+      vars:
+        docker_test_hello_world: true

@@ -1,0 +1,76 @@
+---
+# Tâches post-install : groupe, users, installation du SDK Python (si demandé), tests facultatifs.
+
+- name: S’assurer que le groupe docker existe
+  group:
+    name: docker
+    state: present
+  tags:
+    - docker
+    - docker_post
+    - docker_users
+
+- name: Ajouter des utilisateurs au groupe docker
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
+  when: docker_users | length > 0
+  tags:
+    - docker
+    - docker_post
+    - docker_users
+
+- name: Avertir - les utilisateurs doivent se reconnecter
+  debug:
+    msg: >
+      Les utilisateurs ajoutés au groupe docker devront se reconnecter
+      pour que les permissions prennent effet.
+  when: docker_users | length > 0
+  tags:
+    - docker
+    - docker_post
+    - docker_users
+
+# - name: Installer le SDK Python 'docker' (nécessaire aux modules community.docker)
+#   pip:
+#     name: "{{ docker_python_pkg_name }}"
+#     state: present
+#   when: docker_install_python_sdk | default(true)
+#   tags:
+#     - docker
+#     - docker_dependencies
+
+- name: Installer le SDK Python Docker via APT
+  apt:
+    name: python3-docker
+    state: present
+  tags:
+    - docker
+    - docker_dependencies
+
+- name: Vérifier que Docker répond (version serveur)
+  command: docker version --format '{{"{{.Server.Version}}"}}'
+  register: docker_version
+  changed_when: false
+  failed_when: docker_version.rc != 0
+  tags:
+    - docker
+    - docker_check
+
+- name: Afficher la version de Docker
+  debug:
+    msg: "Docker is installed: {{ docker_version.stdout }}"
+  when: docker_version is defined and docker_version.stdout != ''
+  tags:
+    - docker
+    - docker_check
+
+- name: Tester Docker avec hello-world (optionnel)
+  command: docker run --rm hello-world
+  changed_when: false
+  when: docker_test_hello_world | default(false)
+  tags:
+    - docker
+    - docker_check

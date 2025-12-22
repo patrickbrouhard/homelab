@@ -1,0 +1,94 @@
+---
+- name: Assert Docker present and running
+  command: docker info
+  register: dockerinfo
+  changed_when: false
+  failed_when: dockerinfo.rc != 0
+
+- name: S'assurer que les répertoires racine existent
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ stack_deployer_chown_owner }}"
+    group: "{{ stack_deployer_chown_group }}"
+    mode: '0755'
+  loop:
+    - "{{ docker_root }}"
+    - "{{ docker_data_root }}"
+
+- name: Si aucun stack n'est défini, on les cherche en scannant {{ docker_root }} (depth=1)
+  find:
+    paths: "{{ docker_root }}"
+    file_type: directory
+    depth: 1
+  register: discovered_stacks
+  when: stacks | length == 0 and stack_deployer_scan_if_empty
+
+- name: Définir les stacks scannés quand stacks est vice
+  set_fact:
+    stacks: "{{ discovered_stacks.files 
+      | map(attribute='path') 
+      | map('basename') 
+      | map('regex_replace', '^(.*)$', '{\"name\": \"\\1\"}') 
+      | map('from_json') 
+      | list }}"
+  when: stacks | length == 0 and stack_deployer_scan_if_empty
+
+- name: Si aucun stack défini ou découvert -> FAIL
+  fail:
+    msg: "No stacks defined or discovered. Set variable 'stacks' or enable scanning."
+  when: stacks | length == 0
+
+- name: S’assurer que les répertoires des stacks (config) existent
+  file:
+    path: "{{ docker_root }}/{{ item.name }}"
+    state: directory
+    owner: "{{ stack_deployer_chown_owner }}"
+    group: "{{ stack_deployer_chown_group }}"
+    mode: '0755'
+  loop: "{{ stacks }}"
+
+- name: S’assurer que les sous-répertoires de données des stacks existent
+  file:
+    path: "{{ docker_data_root }}/{{ item.0.name }}/{{ item.1 }}"
+    state: directory
+    owner: "{{ stack_deployer_chown_owner }}"
+    group: "{{ stack_deployer_data_group }}"
+    mode: "{{ stack_deployer_data_mode }}"
+  loop: "{{ stacks | subelements('data_dirs', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}/{{ item.1 }}"
+
+- name: Render le template compose pour chaque stack (si compose_template est fourni)
+  template:
+    src: "{{ item.compose_template }}"
+    dest: "{{ docker_root }}/{{ item.name }}/docker-compose.yml"
+    owner: "{{ stack_deployer_chown_owner }}"
+    group: "{{ stack_deployer_chown_group }}"
+    mode: '0644'
+  loop: "{{ stacks }}"
+  when: item.compose_template is defined
+
+- name: Render le template env pour chaque stack (si env_template est fourni)
+  template:
+    src: "{{ item.env_template }}"
+    dest: "{{ docker_root }}/{{ item.name }}/.env"
+    owner: "{{ stack_deployer_chown_owner }}"
+    group: "{{ stack_deployer_chown_group }}"
+    mode: '0600'
+  loop: "{{ stacks }}"
+  when: item.env_template is defined
+
+- name: Déployer la stack via docker compose
+  command: "{{ docker_compose_cmd }} -p {{ item.name }} -f docker-compose.yml up -d"
+  args:
+    chdir: "{{ docker_root }}/{{ item.name }}"
+  register: compose_up
+  changed_when: "compose_up.rc == 0 and ('(Re)creating' in compose_up.stdout or 'Starting' in compose_up.stdout or compose_up.stderr != '')"
+  failed_when: compose_up.rc != 0 and compose_up.rc is not none
+  loop: "{{ stacks }}"
+  loop_control:
+    label: "{{ item.name }}"
+  tags:
+    - stacks
+    - deploy

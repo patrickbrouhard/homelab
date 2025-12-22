@@ -1,0 +1,2 @@
+use_dist_upgrade: false   # Par défaut : upgrade simple
+auto_reboot: true         # Par défaut : reboot automatique si nécessaire

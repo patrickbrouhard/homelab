@@ -1,0 +1,18 @@
+# Ansible runtime
+*.retry
+.ansible/
+ansible.log
+
+# Fact cache
+facts/
+fact_cache/
+.cache/
+
+# Vault / secrets locaux
+group_vars/*/local.yml
+host_vars/*/local.yml
+group_vars/*/vault.yml
+host_vars/*/vault.yml
+
+# Inventaires locaux
+inventories/local/

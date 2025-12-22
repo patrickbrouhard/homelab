@@ -1,0 +1,6 @@
+- name: Règle le fuseau horaire sur {{ system_timezone }}
+  community.general.timezone:
+    name: "{{ system_timezone }}"
+  tags:
+    - baseline
+    - timezone

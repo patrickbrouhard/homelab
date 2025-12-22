@@ -1,0 +1,11 @@
+- name: Envoi message Telegram
+  ansible.builtin.uri:
+    url: "https://api.telegram.org/bot{{ telegram_token }}/sendMessage"
+    method: POST
+    body_format: json
+    body:
+      chat_id: "{{ telegram_chat_id }}"
+      text: "{{ telegram_message }}"
+      parse_mode: "{{ telegram_parse_mode }}"
+  when:
+    - telegram_message | length > 0

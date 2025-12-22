@@ -1,0 +1,27 @@
+- name: Check disk space
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Vérifie l'espace disque restant
+      shell: |
+        set -euo pipefail
+        df -Ph / | awk 'NR==2 {print $5}'
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: disk_usage
+
+    - name: Alerte Telegram si espace disque > 80%
+      include_role:
+        name: notify_telegram
+      vars:
+        telegram_message: >
+          ⚠️ *Espace disque critique*
+          Hôte : {{ inventory_hostname }}
+          Utilisation : {{ disk_usage.stdout }}
+      when: disk_usage.stdout[:-1] | int > 80
+      tags:
+        - alert
+        - disk
+        - telegram

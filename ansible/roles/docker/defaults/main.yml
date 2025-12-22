@@ -1,0 +1,73 @@
+# valeurs par défaut pour le rôle docker
+---
+
+# Paquets à installer (peut être surchargé)
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-compose-plugin
+  - docker-buildx-plugin
+
+# Utilisateurs à ajouter au groupe docker (liste)
+# utilisateur par défaut : ansible_user, réglé dans inventory/group_vars/docker.yml
+docker_users: []
+
+# Nom du service (systemd)
+docker_service_name: docker
+
+# Configuration du daemon qui sera rendue en JSON dans /etc/docker/daemon.json
+docker_daemon_config:
+  storage-driver: overlay2
+  live-restore: true
+  log-driver: json-file
+  log-opts:
+    max-size: 10m
+    max-file: "3"
+
+# Modifications sysctl nécessaires pour le réseau des conteneurs
+# Paramètres kernel nécessaires au réseau Docker
+# D'autres peuvent être requis pour Kubernetes ou firewall avancé
+# exemples:
+# net.bridge.bridge-nf-call-iptables: 1
+# net.bridge.bridge-nf-call-ip6tables: 1
+docker_sysctl:
+  net.ipv4.ip_forward: 1
+
+# Si true, la tâche tentera de redémarrer le service si la configuration a changé
+docker_restart_on_config_change: true
+
+# Tests post-install
+docker_test_hello_world: false
+
+# Options pour le pruning
+docker_prune_containers: false
+docker_prune_images: true
+docker_prune_volumes: false
+docker_prune_builder_cache: false
+
+# Tags par défaut pour faciliter l'appel sélectif des tâches
+docker_task_tags:
+  - docker
+  - docker_install
+  - docker_config
+  - docker_post
+  - docker_maintenance
+
+# Installer le SDK Python 'docker' nécessaire aux modules community.docker
+# docker_install_python_sdk: true
+# docker_python_pkg_name: docker
+
+# Sécurité : tag à utiliser pour tâches potentiellement destructrices
+# Les tâches marquées 'never' ne seront pas exécutées sans opt-in explicite
+# (ansible-playbook --tags "docker_prune,never").
+# Valeur par défaut: on considère que les tâches dangereuses nécessitent opt-in.
+# (ne pas modifier sans comprendre)
+docker_danger_tag: never
+
+# Drapeau pour forcer mise à jour du cache apt lors de l'installation
+docker_update_cache: true
+
+# Timeout pour tests/commandes (si on veut l'ajouter sur certaines commandes)
+# docker_cmd_timeout: 60
+docker_apt_gpg_url: https://download.docker.com/linux/ubuntu/gpg

@@ -1,0 +1,14 @@
+---
+# handlers/main.yml
+# Handler pour (re)demarrer docker lorsque la configuration change.
+# Le tag 'docker_restart' permet d'appeler explicitement les handlers si besoin.
+
+- name: Restart docker
+  become: true
+  systemd:
+    name: "{{ docker_service_name }}"
+    state: restarted
+    daemon_reload: yes
+  tags:
+    - docker
+    - docker_restart

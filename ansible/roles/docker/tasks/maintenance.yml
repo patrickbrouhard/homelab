@@ -1,0 +1,39 @@
+# https://docs.ansible.com/projects/ansible/latest/collections/community/docker/index.html
+---
+# tasks/maintenance.yml
+# Tâches de maintenance : prune, nettoyage, vérifications.
+# Les actions destructrices sont taggées 'never' par défaut.
+
+- name: Vérifier la communication avec le daemon Docker
+  community.docker.docker_host_info:
+  register: docker_info
+  tags:
+    - docker
+    - docker_check
+
+- name: Supprimer (prune) (images, containers, volumes, builder cache) selon variables
+  community.docker.docker_prune:
+    containers: "{{ docker_prune_containers | default(false) }}"
+    images: "{{ docker_prune_images | default(false) }}"
+    networks: false
+    volumes: "{{ docker_prune_volumes | default(false) }}"
+    builder_cache: "{{ docker_prune_builder_cache | default(false) }}"
+    images_filters:
+      dangling: false
+  when: >
+    (docker_prune_containers | default(false)) or
+    (docker_prune_images | default(false)) or
+    (docker_prune_volumes | default(false)) or
+    (docker_prune_builder_cache | default(false))
+  tags:
+    - docker
+    - docker_maintenance
+    - docker_prune
+    - "{{ docker_danger_tag }}"
+
+- name: Debug info après prune (résumé)
+  debug:
+    msg: "Docker prune completed (if any)."
+  tags:
+    - docker
+    - docker_maintenance

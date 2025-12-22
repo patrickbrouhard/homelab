@@ -1,0 +1,6 @@
+---
+- name: Gestion des clés SSH
+  import_tasks: config-add-ssh-key.yml
+
+- name: Configuration sudo
+  import_tasks: config-sudo-nopwd.yml

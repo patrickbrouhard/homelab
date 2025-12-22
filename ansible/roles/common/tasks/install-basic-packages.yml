@@ -1,0 +1,10 @@
+---
+- name: Installer les paquets de base nécessaires
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      - ca-certificates
+      - unzip
+    state: present
+    update_cache: true

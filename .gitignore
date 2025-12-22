@@ -1,0 +1,51 @@
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+*~
+
+# Linux
+*~
+.directory
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# SSH keys
+id_rsa
+id_ed25519
+*.pem
+
+# Logs
+*.log
+logs/
+
+# Autres
+*.env
+*.bak
+
+# Secrets / Terraform
+**/credentials.auto.tfvars
+**/*.secret.tfvars
+**/secrets.tfvars
+
+# Ansible local secrets
+**/group_vars/*/local.yml
+**/group_vars/*/vault.yml

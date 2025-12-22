@@ -1,0 +1,23 @@
+---
+- name: Vérifier que la clé SSH publique est définie
+  ansible.builtin.assert:
+    that:
+      - ssh_public_key is defined
+      - ssh_public_key | length > 0
+    fail_msg: "La clé SSH publique n'est pas définie ou est vide"
+  tags: ssh
+
+- name: Installer la clé SSH publique
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: "{{ ssh_public_key }}"
+  tags:
+    - ssh
+
+- name: Vérifier que authorized_keys contient au moins une clé
+  ansible.builtin.stat:
+    path: /home/{{ ansible_user }}/.ssh/authorized_keys
+  register: authorized_keys_file
+  tags:
+    - ssh

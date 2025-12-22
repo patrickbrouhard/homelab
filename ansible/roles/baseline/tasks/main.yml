@@ -1,0 +1,8 @@
+- name: configuration du fuseau horaire
+  import_tasks: timezone.yml
+
+- name: configuration de la locale
+  import_tasks: locale.yml
+
+- name: configuration du clavier
+  import_tasks: keyboard.yml

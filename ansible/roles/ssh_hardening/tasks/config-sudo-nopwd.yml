@@ -1,0 +1,20 @@
+---
+- name: Refuser sudo sans mot de passe si aucune clé SSH n'est présente
+  ansible.builtin.assert:
+    that:
+      - authorized_keys_file.stat.exists
+    fail_msg: >
+      Aucune clé SSH détectée pour {{ ansible_user }}.
+      Activation de sudo sans mot de passe refusée pour éviter un lock-out.
+  tags:
+    - sudo
+
+- name: Configurer sudo sans mot de passe
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ ansible_user }}_nopasswd
+    line: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL"
+    create: yes
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  tags:
+    - sudo

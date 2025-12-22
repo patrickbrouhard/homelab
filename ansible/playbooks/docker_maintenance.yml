@@ -1,0 +1,23 @@
+---
+# Playbook dédié à la maintenance Docker.
+#
+# Safe par défaut :
+# - aucune action destructive sans opt-in explicite
+# - les tâches dangereuses sont taggées 'never'
+
+- name: Docker maintenance (safe by default)
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    docker_prune_containers: false
+    docker_prune_images: true
+    docker_prune_volumes: false
+    docker_prune_builder_cache: false
+
+  tasks:
+    - name: Run Docker maintenance role
+      import_role:
+        name: docker
+        tasks_from: maintenance.yml

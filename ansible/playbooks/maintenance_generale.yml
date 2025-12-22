@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  
+  vars:
+    use_dist_upgrade: false
+  
+  tasks:
+    - name: mises à jour système
+      import_role:
+        name: common
+        tasks_from: apt-update-upgrade.yml
+
+    - name: redémarrage si nécessaire
+      import_role:
+        name: common
+        tasks_from: reboot-if-needed.yml

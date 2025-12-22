@@ -1,0 +1,9 @@
+---
+- name: mises à jour système
+  import_tasks: apt-update-upgrade.yml
+
+- name: redémarrage si nécessaire
+  import_tasks: reboot-if-needed.yml
+
+- name: installation de packages de base
+  import_tasks: install-basic-packages.yml

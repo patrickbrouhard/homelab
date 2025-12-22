@@ -1,0 +1,15 @@
+- name: Définir la disposition du clavier sur {{ keyboard_layout }}
+  lineinfile:
+    path: /etc/default/keyboard
+    regexp: '^XKBLAYOUT='
+    line: "XKBLAYOUT=\"{{ keyboard_layout }}\""
+  tags:
+    - baseline
+    - clavier
+
+- name: S’assurer que la configuration du clavier est appliquée
+  command: setupcon
+  changed_when: false
+  tags:
+    - baseline
+    - clavier

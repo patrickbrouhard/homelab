@@ -1,0 +1,28 @@
+---
+# tasks/main.yml
+# Main tasks file : importe des fichiers de tâches modulaires.
+# Cette structure rend le rôle lisible et permet des appels sélectifs par tag.
+
+- name: Docker - installation
+  import_tasks: install.yml
+  tags:
+    - docker
+    - docker_install
+
+- name: Docker - configuration du daemon
+  import_tasks: daemon.yml
+  tags:
+    - docker
+    - docker_config
+
+- name: Docker - post install (users / service / tests)
+  import_tasks: post_install.yml
+  tags:
+    - docker
+    - docker_post
+
+- name: Docker - maintenance (prune, vérifications)
+  import_tasks: maintenance.yml
+  tags:
+    - docker
+    - docker_maintenance
