@@ -33,5 +33,11 @@ Ce projet automatise la création et la configuration d’une VM Proxmox depuis 
 * Conteneurisation + gestion Docker
 * "Roles as libraries, Playbooks as workflows"
 
+## TBD
+
+- Tester Molécule (probablement pour le rôle Docker)
+
+Molécule est un framework de test et de développement pour Ansible, conçu spécifiquement pour valider les rôles, playbooks et collections.
+
 ---
 
