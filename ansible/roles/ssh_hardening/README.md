@@ -1,0 +1,1 @@
+A étendre par la suite pour du vrai "hardening" (PasswordAuthentication no, PermitRootLogin no, port change, no AllowUsers, etc...)
