@@ -1,5 +1,5 @@
 - name: S’assurer que la locale {{ system_locale }} existe
-  locale_gen:
+  community.general.locale_gen:
     name: "{{ system_locale }}"
     state: present
   tags:
@@ -7,10 +7,16 @@
     - locale
 
 - name: Définir la locale système par défaut
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/locale
     regexp: '^LANG='
     line: "LANG={{ system_locale }}"
   tags:
     - baseline
     - locale
+
+- name: Définir LC_ALL
+  ansible.builtin.lineinfile:
+    path: /etc/default/locale
+    regexp: '^LC_ALL='
+    line: "LC_ALL=fr_FR.UTF-8"

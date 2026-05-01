@@ -1,15 +1,16 @@
 - name: Définir la disposition du clavier sur {{ keyboard_layout }}
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/keyboard
     regexp: '^XKBLAYOUT='
     line: "XKBLAYOUT=\"{{ keyboard_layout }}\""
+  register: keyboard_config # stocke le résultat (dont .changed) de la tâche lineinfile
   tags:
     - baseline
     - clavier
 
-- name: S’assurer que la configuration du clavier est appliquée
-  command: setupcon
-  changed_when: false
+- name: Appliquer la configuration clavier si modifiée
+  ansible.builtin.command: setupcon
+  when: keyboard_config.changed # exécute setupcon uniquement si le fichier a été modifié
   tags:
     - baseline
     - clavier

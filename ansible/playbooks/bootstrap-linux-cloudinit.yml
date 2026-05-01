@@ -1,42 +1,50 @@
----
 - name: Bootstrap VM (wait until ready + cloud-init)
   hosts: web
   gather_facts: false
 
   tasks:
-    - name: Wait for SSH to be available
-      ansible.builtin.wait_for:
-        host: "{{ ansible_host | default(inventory_hostname) }}"
-        port: 22
-        delay: 5
-        timeout: 300
-      delegate_to: localhost # la vérification est faite depuis la machine de contrôle
-      become: false
+    - name: Bootstrap sequence
+      block:
 
-    - name: Check cloud-init is installed
-      ansible.builtin.command: cloud-init --version
-      register: cloud_init_check
-      failed_when: cloud_init_check.rc != 0
-      changed_when: false
+        - name: Wait for SSH to be available
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host | default(inventory_hostname) }}"
+            port: 22
+            delay: 5
+            timeout: 300
+          delegate_to: localhost
+          become: false
 
-    - name: Wait for cloud-init to finish
-      ansible.builtin.command: cloud-init status --wait
-      register: cloud_init_status
-      changed_when: false
-      failed_when: cloud_init_status.rc not in [0, 2]
+        - name: Check cloud-init is installed
+          ansible.builtin.command: cloud-init --version
+          register: cloud_init_check
+          failed_when: cloud_init_check.rc != 0
+          changed_when: false
 
-    - name: Ensure python3 is installed
-      ansible.builtin.raw: |
-        test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
-      changed_when: false
+        - name: Wait for cloud-init to finish
+          ansible.builtin.command: cloud-init status --wait
+          register: cloud_init_status
+          changed_when: false
+          failed_when: cloud_init_status.rc not in [0, 2]
 
-- name: Apply base system configuration
-  hosts: web
-  become: true
+        - name: Check if python3 is installed
+          ansible.builtin.raw: test -e /usr/bin/python3
+          register: python_check
+          changed_when: false
+          failed_when: false
 
-  roles:
-    - baseline
-    - role: common
-      vars:
-        use_dist_upgrade: true
-    - ssh_hardening
+        - name: Install python3 if missing
+          ansible.builtin.raw: apt-get update && apt-get install -y python3
+          when: python_check.rc != 0
+
+      rescue:
+
+        - name: Notify bootstrap failure
+          ansible.builtin.debug:
+            msg: "Bootstrap failed on {{ inventory_hostname }}"
+
+        - name: Send Telegram alert
+          include_role:
+            name: notify_telegram
+          vars:
+            message: "Bootstrap failed on {{ inventory_hostname }}"

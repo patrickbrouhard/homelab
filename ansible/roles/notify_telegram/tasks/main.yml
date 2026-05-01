@@ -1,11 +1,66 @@
-- name: Envoi message Telegram
+- name: "Skip si notifications désactivées ou message vide"
+  ansible.builtin.meta: end_play
+  when:
+    - not telegram_enabled
+    - telegram_message | length == 0
+  tags: [telegram, skip]
+
+# --------------------------------------------------
+
+- name: "Vérifier les variables Telegram obligatoires"
+  ansible.builtin.assert:
+    that:
+      - telegram_token | length > 0
+      - telegram_chat_id | length > 0
+    fail_msg: >
+      Variables Telegram manquantes.
+      Définir telegram_token et telegram_chat_id dans le vault.
+  tags: [telegram, validate]
+
+# --------------------------------------------------
+
+- name: "Construire le payload Telegram"
+  ansible.builtin.set_fact:
+    telegram_payload:
+      chat_id: "{{ telegram_chat_id }}"
+      text: "{{ telegram_message }}"
+      parse_mode: "{{ telegram_parse_mode }}"
+  tags: [telegram]
+
+# --------------------------------------------------
+
+- name: "Envoyer le message Telegram"
   ansible.builtin.uri:
     url: "https://api.telegram.org/bot{{ telegram_token }}/sendMessage"
     method: POST
     body_format: json
-    body:
-      chat_id: "{{ telegram_chat_id }}"
-      text: "{{ telegram_message }}"
-      parse_mode: "{{ telegram_parse_mode }}"
+    body: "{{ telegram_payload }}"
+    status_code: 200
+    timeout: "{{ telegram_timeout }}"
+    return_content: true
+  register: telegram_response
+  retries: "{{ telegram_retries }}"
+  delay: "{{ telegram_delay }}"
+  until: telegram_response.status == 200 and (telegram_response.json.ok | default(false))
+  no_log: true
+  tags: [telegram, send]
+
+# --------------------------------------------------
+
+- name: "Vérifier la réponse Telegram (API-level)"
+  ansible.builtin.fail:
+    msg: >
+      Erreur Telegram API :
+      {{ telegram_response.json.description | default('Réponse inconnue') }}
   when:
-    - telegram_message | length > 0
+    - telegram_response.json is defined
+    - not telegram_response.json.ok | default(false)
+  tags: [telegram, validate]
+
+# --------------------------------------------------
+
+- name: "Debug succès (optionnel)"
+  ansible.builtin.debug:
+    msg: "Message Telegram envoyé avec succès"
+  when: not ansible_check_mode
+  tags: [telegram, debug]
