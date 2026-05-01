@@ -24,6 +24,5 @@ ansible-playbook playbooks/bootstrap-linux-cloudinit.yml --limit web
 
 echo "=== Ansible provisioning ==="
 ansible-playbook playbooks/web_docker_install.yml --limit web
-ansible-playbook playbooks/web_docker_containers_install.yml --limit web
 
 echo "=== Terminated ==="

@@ -14,3 +14,9 @@
   tags:
     - baseline
     - locale
+
+- name: Définir LC_ALL
+  lineinfile:
+    path: /etc/default/locale
+    regexp: '^LC_ALL='
+    line: "LC_ALL=fr_FR.UTF-8"

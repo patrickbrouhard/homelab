@@ -6,5 +6,10 @@
       - curl
       - ca-certificates
       - unzip
+      - make
+      - htop
+      - apt-transport-https
+      - software-properties-common
+      - net-tools
     state: present
     update_cache: true
