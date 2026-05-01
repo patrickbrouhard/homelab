@@ -1,2 +1,21 @@
+# Message à envoyer (vide = pas d'envoi)
 telegram_message: ""
+
+# Mode de parsing Telegram (MarkdownV2, HTML, Markdown)
 telegram_parse_mode: "Markdown"
+
+# Nombre de tentatives en cas d’échec
+telegram_retries: 3
+
+# Délai entre retries (secondes)
+telegram_delay: 2
+
+# Timeout HTTP
+telegram_timeout: 10
+
+# Activer/désactiver complètement les notifications
+telegram_enabled: true
+
+# ⚠️ À définir dans le vault (ex: group_vars/vault.yml)
+telegram_token: ""
+telegram_chat_id: ""

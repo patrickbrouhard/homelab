@@ -1,0 +1,29 @@
+---
+- name: Test du role notify_telegram
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Vérifier que les hosts répondent
+      ansible.builtin.ping:
+      register: ping_result
+      ignore_errors: true
+
+    - name: Construire le message Telegram
+      ansible.builtin.set_fact:
+        telegram_message: >-
+          🔎 Test Ansible Telegram
+
+          {% if ping_result is failed %}
+          ❌ Host {{ inventory_hostname }} INJOIGNABLE
+          {% else %}
+          ✅ Host {{ inventory_hostname }} OK
+          {% endif %}
+
+    - name: Envoyer notification Telegram
+      ansible.builtin.include_role:
+        name: notify_telegram
+      tags: [telegram]
+
+# test avec :~/homelab/ansible$ ansible-playbook -i inventory playbooks/test-role-notify_telegram.yml
