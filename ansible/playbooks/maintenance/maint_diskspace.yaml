@@ -13,7 +13,7 @@
       register: disk_usage
 
     - name: Alerte Telegram si espace disque > 80%
-      include_role:
+      import_role:
         name: notify_telegram
       vars:
         telegram_message: >
