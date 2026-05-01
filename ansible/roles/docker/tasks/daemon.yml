@@ -2,7 +2,7 @@
 # Déploiement de la configuration daemon.json et application des paramètres sysctl.
 
 - name: S’assurer que /etc/docker existe
-  file:
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
     owner: root
@@ -23,7 +23,7 @@
   when: docker_daemon_config is defined
 
 - name: Appliquer les paramètres sysctl pour Docker
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.key }}"
     value: "{{ item.value }}"
     sysctl_set: yes

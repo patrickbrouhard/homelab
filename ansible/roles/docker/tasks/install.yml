@@ -5,7 +5,7 @@
 # Les étapes sont idempotentes et taggées pour pouvoir n'installer que les dépendances si besoin.
 
 - name: Installer dépendances APT de base
-  apt:
+  ansible.builtin.apt:
     name:
       - ca-certificates
       - curl
@@ -19,7 +19,7 @@
     - docker_dependencies
 
 - name: Créer /etc/apt/keyrings (pour Apt signed-by)
-  file:
+  ansible.builtin.file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
@@ -28,7 +28,7 @@
     - docker_install
 
 - name: Télécharger la clé GPG officielle de Docker
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ docker_apt_gpg_url }}"
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
@@ -37,7 +37,7 @@
     - docker_install
 
 - name: Ajouter le dépôt Docker (sources list)
-  copy:
+  ansible.builtin.copy:
     dest: /etc/apt/sources.list.d/docker.sources
     content: |
       Types: deb
@@ -51,7 +51,7 @@
     - docker_install
 
 - name: Mettre à jour le cache APT
-  apt:
+  ansible.builtin.apt:
     update_cache: yes
   when: docker_update_cache | default(true)
   tags:
@@ -59,7 +59,7 @@
     - docker_install
 
 - name: Installer les paquets Docker
-  apt:
+  ansible.builtin.apt:
     name: "{{ docker_packages }}"
     state: present
   notify: Restart docker
@@ -68,7 +68,7 @@
     - docker_install
 
 - name: Activer et démarrer Docker
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ docker_service_name }}"
     enabled: true
     state: started

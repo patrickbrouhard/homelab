@@ -2,7 +2,7 @@
 # Tâches post-install : groupe, users, installation du SDK Python (si demandé), tests facultatifs.
 
 - name: S’assurer que le groupe docker existe
-  group:
+  ansible.builtin.group:
     name: docker
     state: present
   tags:
@@ -11,7 +11,7 @@
     - docker_users
 
 - name: Ajouter des utilisateurs au groupe docker
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     groups: docker
     append: yes
@@ -23,7 +23,7 @@
     - docker_users
 
 - name: Avertir - les utilisateurs doivent se reconnecter
-  debug:
+  ansible.builtin.debug:
     msg: >
       Les utilisateurs ajoutés au groupe docker devront se reconnecter
       pour que les permissions prennent effet.
@@ -43,7 +43,7 @@
 #     - docker_dependencies
 
 - name: Installer le SDK Python Docker via APT
-  apt:
+  ansible.builtin.apt:
     name: python3-docker
     state: present
   tags:
@@ -51,7 +51,7 @@
     - docker_dependencies
 
 - name: Vérifier que Docker répond (version serveur)
-  command: docker version --format '{{"{{.Server.Version}}"}}'
+  ansible.builtin.command: docker version --format '{{"{{.Server.Version}}"}}'
   register: docker_version
   changed_when: false
   failed_when: docker_version.rc != 0
@@ -60,7 +60,7 @@
     - docker_check
 
 - name: Afficher la version de Docker
-  debug:
+  ansible.builtin.debug:
     msg: "Docker is installed: {{ docker_version.stdout }}"
   when: docker_version is defined and docker_version.stdout != ''
   tags:
@@ -68,7 +68,7 @@
     - docker_check
 
 - name: Tester Docker avec hello-world (optionnel)
-  command: docker run --rm hello-world
+  ansible.builtin.command: docker run --rm hello-world
   changed_when: false
   when: docker_test_hello_world | default(false)
   tags:
