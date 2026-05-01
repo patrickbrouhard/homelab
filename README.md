@@ -6,9 +6,9 @@ Ce projet automatise la création et la configuration d’une VM Proxmox depuis 
 - provisioning et installation de Docker avec **Ansible**.
 
 ## Objectifs
-- Présenter une stack IaC reproductible pour un homelab.
+- Stack IaC pour un homelab.
 - Séparer la phase **provisionnement** (Terraform) de la phase **configuration** (Ansible).
-- Fournir des rôles Ansible idempotents pour la maintenance des conteneurs.
+- Rôles Ansible idempotents.
 
 ## Prérequis
 - Proxmox VE accessible (API).
